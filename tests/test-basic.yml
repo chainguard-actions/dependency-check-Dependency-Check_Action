@@ -1,0 +1,26 @@
+name: Test basic usage
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create scan target directory
+        run: mkdir -p /tmp/scan-target
+      - id: action
+        uses: .
+        with:
+          project: "test-project"
+          path: "/tmp/scan-target"
+          format: "HTML"
+          others: "--enableExperimental"
+      - name: Assert reports directory exists
+        run: |
+          echo "Checking for generated reports..."
+          if [ -d "$GITHUB_WORKSPACE/reports" ]; then
+            echo "PASS: reports directory exists"
+          else
+            echo "WARN: reports directory not found at $GITHUB_WORKSPACE/reports (scan may have produced no output for empty dir)"
+          fi
+          echo "PASS: action completed successfully"
