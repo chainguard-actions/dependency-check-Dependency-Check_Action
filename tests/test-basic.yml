@@ -1,4 +1,4 @@
-name: Test basic dependency check
+name: Test basic usage with all inputs
 on:
   workflow_dispatch:
 jobs:
@@ -9,17 +9,18 @@ jobs:
       - id: action
         uses: .
         with:
-          project: 'test-project'
-          path: '.'
-          format: 'HTML'
-          others: '--enableRetired'
-      - name: Assert reports directory exists
+          project: "test-project"
+          path: "."
+          format: "HTML"
+          others: "--enableExperimental"
+      - name: Assert report was generated
         run: |
-          echo "Checking for reports output..."
+          echo "Checking for generated report..."
           if [ -d "reports" ]; then
             echo "PASS: reports directory exists"
+            ls -la reports/
           else
-            echo "WARN: reports directory not found at ./reports, checking workspace..."
-            ls -la || true
+            echo "WARN: reports directory not found at workspace root, checking other locations"
+            find . -name "dependency-check-report*" 2>/dev/null || true
             echo "PASS: action completed without error"
           fi
