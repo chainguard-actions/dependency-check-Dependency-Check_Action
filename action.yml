@@ -13,7 +13,7 @@ inputs:
         required: true
 runs:
     using: 'docker'
-    image: 'docker://owasp/dependency-check-action@sha256:8bed1ee2bae627ec4866ca0e423233592e8645ec63413f86326954b738497a38' # latest
+    image: 'docker://owasp/dependency-check-action@sha256:78b909a529ed7b1b65e4abef423455acf8cd7ce076e34424328bed241f2b1fb0' # latest
     args:
 
         - '--project'

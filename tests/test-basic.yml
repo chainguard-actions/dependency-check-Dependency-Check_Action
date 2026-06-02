@@ -1,4 +1,4 @@
-name: Test basic usage
+name: Test basic dependency check
 on:
   workflow_dispatch:
 jobs:
@@ -9,16 +9,15 @@ jobs:
       - id: action
         uses: .
         with:
-          project: 'test-project'
-          path: '.'
-          format: 'HTML'
+          project: "test-project"
+          path: "."
+          format: "HTML"
       - name: Assert report was generated
         run: |
           echo "Checking for generated report..."
-          if [ -d "reports" ]; then
-            echo "PASS: reports directory exists"
-            ls -la reports/
-          else
-            echo "WARN: reports directory not found at workspace root, checking /github/workspace/reports"
-            echo "PASS: action completed without error"
+          if [ ! -d "reports" ]; then
+            echo "FAIL: reports directory not found"
+            exit 1
           fi
+          echo "PASS: reports directory exists"
+          ls -la reports/
