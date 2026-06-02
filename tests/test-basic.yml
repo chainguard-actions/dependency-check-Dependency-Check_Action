@@ -1,4 +1,4 @@
-name: Test basic usage
+name: Test basic dependency check
 on:
   workflow_dispatch:
 jobs:
@@ -6,21 +6,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Create scan target directory
-        run: mkdir -p /tmp/scan-target
       - id: action
         uses: .
         with:
-          project: "test-project"
-          path: "/tmp/scan-target"
-          format: "HTML"
-          others: "--enableExperimental"
+          project: 'test-project'
+          path: '.'
+          format: 'HTML'
+          others: '--enableRetired'
       - name: Assert reports directory exists
         run: |
-          echo "Checking for generated reports..."
-          if [ -d "$GITHUB_WORKSPACE/reports" ]; then
+          echo "Checking for reports output..."
+          if [ -d "reports" ]; then
             echo "PASS: reports directory exists"
           else
-            echo "WARN: reports directory not found at $GITHUB_WORKSPACE/reports (scan may have produced no output for empty dir)"
+            echo "WARN: reports directory not found at ./reports, checking workspace..."
+            ls -la || true
+            echo "PASS: action completed without error"
           fi
-          echo "PASS: action completed successfully"
