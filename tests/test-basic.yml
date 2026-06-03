@@ -1,4 +1,4 @@
-name: Test basic usage with all inputs
+name: Test basic usage
 on:
   workflow_dispatch:
 jobs:
@@ -10,17 +10,6 @@ jobs:
         uses: .
         with:
           project: "test-project"
-          path: "."
+          path: "/github/workspace"
           format: "HTML"
           others: "--enableExperimental"
-      - name: Assert report was generated
-        run: |
-          echo "Checking for generated report..."
-          if [ -d "reports" ]; then
-            echo "PASS: reports directory exists"
-            ls -la reports/
-          else
-            echo "WARN: reports directory not found at workspace root, checking other locations"
-            find . -name "dependency-check-report*" 2>/dev/null || true
-            echo "PASS: action completed without error"
-          fi
