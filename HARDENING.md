@@ -14,11 +14,11 @@ Action **dependency-check--Dependency-Check_Action/1.0.0** was hardened automati
 
 ### unpinned-uses (severity: high)
 
-The action uses a Docker image referenced by a mutable tag (`docker://owasp/dependency-check-action:latest`) instead of an immutable SHA digest. This means the image pulled at runtime can change without notice, enabling supply-chain attacks where a compromised or updated image executes arbitrary code in the runner. The `image:` field should be pinned to a specific SHA digest, e.g. `image: owasp/dependency-check-action@sha256:<64-hex-char-digest>`.
+The action uses a Docker image referenced by a mutable tag ('latest') instead of an immutable SHA digest. This means the action could silently pull a different (potentially malicious) image on each run. The failing reference is: image: 'docker://owasp/dependency-check-action:latest'. It should be pinned to a specific SHA digest, e.g. 'docker://owasp/dependency-check-action@sha256:<64-hex-char-digest>'.
 
 Locations:
 
-- `action.yml:16`
+- `action.yml:14`
 
 ## Iteration Notes
 
@@ -28,5 +28,5 @@ Locations:
 
 **Notes:**
 
-Pinned the mutable Docker image tag `owasp/dependency-check-action:latest` to its immutable SHA256 digest `sha256:78b909a529ed7b1b65e4abef423455acf8cd7ce076e34424328bed241f2b1fb0` in action.yml line 16. The original tag is preserved as a comment (`# latest`) for readability.
+Pinned the Docker image reference in action.yml from the mutable 'owasp/dependency-check-action:latest' tag to the immutable digest 'owasp/dependency-check-action@sha256:a972e934cbf21a5ebee339dec0b3a99411611a1f27112b41511e1f93a6ced9e7', with '# latest' comment preserved for readability.
 

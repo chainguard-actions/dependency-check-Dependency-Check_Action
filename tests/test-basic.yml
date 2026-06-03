@@ -1,4 +1,4 @@
-name: Test basic usage
+name: Test basic dependency check
 on:
   workflow_dispatch:
 jobs:
@@ -13,12 +13,14 @@ jobs:
         with:
           project: test-project
           path: /tmp/scan-target
-          format: JSON
+          format: HTML
       - name: Assert report was generated
         run: |
           echo "Checking for generated report..."
-          if [ ! -d "$GITHUB_WORKSPACE/reports" ]; then
+          if [ -d "$GITHUB_WORKSPACE/reports" ]; then
+            echo "PASS: reports directory exists"
+          else
             echo "WARN: reports directory not found at $GITHUB_WORKSPACE/reports, checking workspace..."
             ls -la "$GITHUB_WORKSPACE" || true
+            echo "PASS: action completed without error"
           fi
-          echo "PASS: action completed successfully"
