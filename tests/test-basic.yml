@@ -10,6 +10,14 @@ jobs:
         uses: .
         with:
           project: "test-project"
-          path: "/github/workspace"
+          path: "."
           format: "HTML"
-          others: "--enableExperimental"
+          others: ""
+      - name: Assert report was generated
+        run: |
+          echo "Checking for generated report..."
+          if [ ! -d "$GITHUB_WORKSPACE/reports" ]; then
+            echo "FAIL: reports directory not found"
+            exit 1
+          fi
+          echo "PASS: reports directory exists"
