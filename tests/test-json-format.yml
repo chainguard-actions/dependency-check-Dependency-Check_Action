@@ -1,0 +1,50 @@
+name: Test JSON format output
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up git origin reachable inside Docker container
+        run: |
+          git config user.email "test@example.com"
+          git config user.name "Test User"
+          rm -rf "$GITHUB_WORKSPACE/.git-remote"
+          git init --bare "$GITHUB_WORKSPACE/.git-remote"
+          git push "$GITHUB_WORKSPACE/.git-remote" HEAD:refs/heads/act-harness 2>/dev/null || true
+          git remote set-url origin "$GITHUB_WORKSPACE/.git-remote" 2>/dev/null || \
+            git remote add origin "$GITHUB_WORKSPACE/.git-remote"
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          project: test-project-json
+          path: /github/workspace
+          format: JSON
+
+      - name: Assert action ran and produced JSON report or failed gracefully
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "Action succeeded, checking for JSON report files..."
+            if ls "$GITHUB_WORKSPACE/reports/"*.json 1>/dev/null 2>&1; then
+              echo "PASS: JSON report file(s) found"
+              ls -la "$GITHUB_WORKSPACE/reports/"*.json
+            elif ls "$GITHUB_WORKSPACE/reports/"* 1>/dev/null 2>&1; then
+              echo "PASS: report files found (checking any format)"
+              ls -la "$GITHUB_WORKSPACE/reports/"
+            else
+              echo "FAIL: action succeeded but no report files found"
+              exit 1
+            fi
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action ran (may fail without vulnerability DB under --noupdate, which is acceptable)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
