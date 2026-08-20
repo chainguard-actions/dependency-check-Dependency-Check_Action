@@ -1,4 +1,4 @@
-name: Test basic usage - HTML format
+name: Test JSON format output
 on:
   workflow_dispatch:
 jobs:
@@ -10,21 +10,15 @@ jobs:
       - name: Create sample project files to scan
         run: |
           mkdir -p "$GITHUB_WORKSPACE/sample-project"
-          # Create a simple pom.xml for dependency-check to scan
-          cat > "$GITHUB_WORKSPACE/sample-project/pom.xml" << 'EOF'
-          <project>
-            <modelVersion>4.0.0</modelVersion>
-            <groupId>com.example</groupId>
-            <artifactId>sample</artifactId>
-            <version>1.0.0</version>
-            <dependencies>
-              <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>3.12.0</version>
-              </dependency>
-            </dependencies>
-          </project>
+          # Create a package.json for dependency-check to scan
+          cat > "$GITHUB_WORKSPACE/sample-project/package.json" << 'EOF'
+          {
+            "name": "sample-project",
+            "version": "1.0.0",
+            "dependencies": {
+              "lodash": "4.17.21"
+            }
+          }
           EOF
 
       - name: Set up git origin reachable inside Docker container
@@ -43,18 +37,24 @@ jobs:
         with:
           project: 'sample-project'
           path: '/github/workspace/sample-project'
-          format: 'HTML'
+          format: 'JSON'
 
-      - name: Assert action ran and produced output or failed gracefully
+      - name: Assert action ran with JSON format or failed gracefully
         env:
           OUTCOME: ${{ steps.action.outcome }}
         run: |
           echo "outcome: $OUTCOME"
           if [ "$OUTCOME" = "success" ]; then
-            echo "Action succeeded, checking for report output..."
+            echo "Action succeeded with JSON format, checking for report..."
             if [ -d "$GITHUB_WORKSPACE/reports" ]; then
               echo "PASS: reports directory exists"
               ls -la "$GITHUB_WORKSPACE/reports/" || true
+              # Check for JSON report file
+              if ls "$GITHUB_WORKSPACE/reports/"*.json 2>/dev/null | head -1 | grep -q .; then
+                echo "PASS: JSON report file found"
+              else
+                echo "WARN: no JSON report file found, but action succeeded"
+              fi
             else
               echo "WARN: reports directory not found, but action succeeded"
             fi

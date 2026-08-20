@@ -15,16 +15,21 @@ inputs:
         required: false
 runs:
     using: 'docker'
-    image: 'docker://owasp/dependency-check-action@sha256:2abeca7cc12bc2d2614adce039f0e806558dc7e62d9665be4f6623c9868b89c7' # latest
+    image: 'docker://owasp/dependency-check-action:latest@sha256:98d9c2f1ddd8c649e9b0b16cd22f0926136df2784a93697de2ccd9f9b491e923'
+    env:
+        INPUT_PROJECT: ${{ inputs.project }}
+        INPUT_PATH: ${{ inputs.path }}
+        INPUT_FORMAT: ${{ inputs.format }}
+        INPUT_OTHERS: ${{ inputs.others }}
     args:
 
         - '--project'
-        - '${{ inputs.project }}'
+        - '$INPUT_PROJECT'
         - '--scan'
-        - '${{ inputs.path }}'
+        - '$INPUT_PATH'
         - '--format' 
-        - '${{ inputs.format }}'
+        - '$INPUT_FORMAT'
         - '--out'
         -  '/github/workspace/reports'
         - '--noupdate'
-        - '${{ inputs.others }}'
+        - '$INPUT_OTHERS'

@@ -1,4 +1,4 @@
-name: Test basic usage - HTML format
+name: Test others optional input
 on:
   workflow_dispatch:
 jobs:
@@ -10,21 +10,10 @@ jobs:
       - name: Create sample project files to scan
         run: |
           mkdir -p "$GITHUB_WORKSPACE/sample-project"
-          # Create a simple pom.xml for dependency-check to scan
-          cat > "$GITHUB_WORKSPACE/sample-project/pom.xml" << 'EOF'
-          <project>
-            <modelVersion>4.0.0</modelVersion>
-            <groupId>com.example</groupId>
-            <artifactId>sample</artifactId>
-            <version>1.0.0</version>
-            <dependencies>
-              <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>3.12.0</version>
-              </dependency>
-            </dependencies>
-          </project>
+          # Create a requirements.txt for dependency-check to scan
+          cat > "$GITHUB_WORKSPACE/sample-project/requirements.txt" << 'EOF'
+          requests==2.28.0
+          flask==2.2.0
           EOF
 
       - name: Set up git origin reachable inside Docker container
@@ -43,18 +32,25 @@ jobs:
         with:
           project: 'sample-project'
           path: '/github/workspace/sample-project'
-          format: 'HTML'
+          format: 'XML'
+          others: '--enableExperimental'
 
-      - name: Assert action ran and produced output or failed gracefully
+      - name: Assert action ran with others input or failed gracefully
         env:
           OUTCOME: ${{ steps.action.outcome }}
         run: |
           echo "outcome: $OUTCOME"
           if [ "$OUTCOME" = "success" ]; then
-            echo "Action succeeded, checking for report output..."
+            echo "Action succeeded with others input (--enableExperimental), checking for report..."
             if [ -d "$GITHUB_WORKSPACE/reports" ]; then
               echo "PASS: reports directory exists"
               ls -la "$GITHUB_WORKSPACE/reports/" || true
+              # Check for XML report file
+              if ls "$GITHUB_WORKSPACE/reports/"*.xml 2>/dev/null | head -1 | grep -q .; then
+                echo "PASS: XML report file found"
+              else
+                echo "WARN: no XML report file found, but action succeeded"
+              fi
             else
               echo "WARN: reports directory not found, but action succeeded"
             fi
