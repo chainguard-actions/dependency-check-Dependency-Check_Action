@@ -10,42 +10,25 @@
 
 **Harden Agent Version:** `2`
 
-Action **dependency-check--Dependency-Check_Action/1.1.0** was hardened automatically. 2 finding(s) were identified and resolved across 1 iteration(s).
+Action **dependency-check--Dependency-Check_Action/1.1.0** was hardened automatically. 1 finding(s) were identified and resolved across 1 iteration(s).
 
 ## Findings Fixed
 
 ### unpinned-uses (severity: high)
 
-The docker action references a mutable image tag instead of an immutable SHA digest. `image: 'docker://owasp/dependency-check-action:latest'` uses the `:latest` tag, which can be silently replaced with a different (potentially malicious) image at any time, creating a supply-chain attack vector. It should be pinned to a specific SHA digest, e.g. `docker://owasp/dependency-check-action@sha256:<64-hex-char-digest>`.
+The Docker action's runs.image uses a mutable tag instead of a SHA digest: `image: 'docker://owasp/dependency-check-action:latest'`. Pin it to a digest, e.g. `docker://owasp/dependency-check-action@sha256:<digest> # latest`.
 
 Locations:
 
-- `action.yml:20`
-
-### script-injection (severity: high)
-
-Sub-rule (a): Four `args:` entries in the Docker action directly interpolate attacker-controlled `inputs.*` expressions via `${{ }}` YAML template substitution before the container processes them. The offending lines are:
-- `'${{ inputs.project }}'` — line 23
-- `'${{ inputs.path }}'` — line 25
-- `'${{ inputs.format }}'` — line 27
-- `'${{ inputs.others }}'` — line 31
-
-An attacker who controls these inputs (e.g. via `workflow_dispatch` or a calling workflow) can inject arbitrary content that is substituted into the YAML before execution. These values should be passed as environment variables and referenced safely, or the action should validate/sanitize inputs before use.
-
-Locations:
-
-- `action.yml:23`
-- `action.yml:25`
-- `action.yml:27`
-- `action.yml:31`
+- `action.yml:18`
 
 ## Iteration Notes
 
 ### Iteration 1
 
-**Fixes applied:** unpinned-uses, script-injection
+**Fixes applied:** unpinned-uses
 
 **Notes:**
 
-1. Pinned docker image from mutable ':latest' tag to immutable SHA digest: 'docker://owasp/dependency-check-action:latest@sha256:98d9c2f1ddd8c649e9b0b16cd22f0926136df2784a93697de2ccd9f9b491e923'. The docker:// scheme and :latest tag are preserved inline per requirements. 2. Fixed script injection by moving all four ${{ inputs.* }} expressions (project, path, format, others) from args: into an env: block under runs:, then referencing them as plain environment variables ($INPUT_PROJECT, $INPUT_PATH, $INPUT_FORMAT, $INPUT_OTHERS) in the args list. This prevents YAML template substitution of attacker-controlled values directly into the args array.
+Pinned runs.image to docker://owasp/dependency-check-action:latest@sha256:0baed58d5d34257d13f04cda00b3928a6f1db238fe6014723d80e5725b2d059d. The docker:// scheme and the tag are still there. Args are unchanged.
 
